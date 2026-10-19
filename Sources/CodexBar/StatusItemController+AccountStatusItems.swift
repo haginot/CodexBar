@@ -7,9 +7,14 @@ extension StatusItemController {
             let keys = self.settings.selectedAccountIconKeys(for: provider)
             guard !keys.isEmpty else { return "" }
             return self.store.selectedAccountIconInventory(for: provider).filter { keys.contains($0.key) }.map {
-                "\($0.key.autosaveName):\(String(describing: $0.snapshot)):\($0.error ?? ""):\($0.usesLastKnownUsage)"
+                "\($0.key.autosaveName):\(String(describing: $0.snapshot)):\($0.error ?? "")"
+                    + ":\($0.usesLastKnownUsage):\($0.alias ?? "")"
             }.joined(separator: "|")
         }.joined(separator: "||")
+    }
+
+    func firstAccountStatusItem(for provider: UsageProvider) -> NSStatusItem? {
+        self.settings.selectedAccountIconKeys(for: provider).compactMap { self.accountStatusItems[$0] }.first
     }
 
     func hasAccountStatusItems(for provider: UsageProvider) -> Bool {
@@ -40,7 +45,11 @@ extension StatusItemController {
             self.accountMenus[key] = menu
             self.accountMenuFocus[ObjectIdentifier(menu)] = key
             item.menu = menu
-            self.setStatusItemVisiblePreservingPlacement(item, true)
+        }
+        for key in desired {
+            if let item = self.accountStatusItems[key] {
+                self.setStatusItemVisiblePreservingPlacement(item, true)
+            }
         }
         return Set(desired.map(\.autosaveName))
     }

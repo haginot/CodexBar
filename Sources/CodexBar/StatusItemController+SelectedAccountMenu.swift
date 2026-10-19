@@ -29,16 +29,18 @@ extension StatusItemController {
         }
         if let key {
             let ordered = self.store.selectedAccountIconMenuInputs(focused: key)
-            let cards = ordered.map { input in
-                let ordinal = (self.settings.selectedAccountIcons.providers[key.provider]?
-                    .accounts.firstIndex(of: input.key) ?? 0) + 1
+            let selected = self.settings.selectedAccountIcons.providers[key.provider]?.accounts ?? []
+            let cards = ordered.enumerated().map { index, input in
+                let ordinal = (selected.firstIndex(of: input.key) ?? (selected.count + index)) + 1
                 let label = input.label(hidePersonalInfo: self.settings.hidePersonalInfo, ordinal: ordinal)
                 return self.store.menuCardModel(for: context.currentProvider, context: .account(.init(
                     snapshot: input.snapshot,
                     error: input.error,
                     info: AccountInfo(email: label, plan: nil),
+                    privacyOrdinal: .init(ordinal),
                     historySelection: .unavailable,
-                    lastKnownUsageCapturedAt: input.usesLastKnownUsage ? input.snapshot?.updatedAt : nil)))
+                    lastKnownUsageCapturedAt: input.usesLastKnownUsage ? input.snapshot?.updatedAt : nil,
+                    label: label)))
             }
             if !cards.isEmpty { self.addStackedMenuCards(cards, to: menu, context: context) }
             return true

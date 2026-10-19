@@ -607,8 +607,7 @@ extension StatusItemController: StatusItemMenuPersistentActionDelegate {
         }
 
         let provider = self.resolvedShortcutProvider()
-        // Use the lazy accessor to ensure the item exists
-        let item = self.lazyStatusItem(for: provider)
+        let item = self.firstAccountStatusItem(for: provider) ?? self.lazyStatusItem(for: provider)
         item.button?.performClick(nil)
     }
 
@@ -627,6 +626,8 @@ extension StatusItemController: StatusItemMenuPersistentActionDelegate {
     func celebrationOriginPoint(for provider: UsageProvider?) -> CGPoint? {
         let item: NSStatusItem = if self.shouldMergeIcons {
             self.statusItem
+        } else if let provider, let accountItem = self.firstAccountStatusItem(for: provider) {
+            accountItem
         } else if let provider, let existing = self.statusItems[provider.instanceID], existing.isVisible {
             existing
         } else {

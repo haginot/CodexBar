@@ -18,6 +18,24 @@ struct SelectedAccountIconsProjectionTests {
             primary: RateWindow(usedPercent: 37, windowMinutes: 300, resetsAt: nil, resetDescription: nil),
             secondary: nil,
             updatedAt: Date(timeIntervalSince1970: 100))
+        settings.hidePersonalInfo = false
+        let identified = snapshot.withIdentity(.init(
+            providerID: UsageProvider.claude.instanceID,
+            accountEmail: "fixture@example.invalid",
+            accountOrganization: nil,
+            loginMethod: nil))
+        let card = store.menuCardModel(for: .claude, context: .account(.init(
+            snapshot: identified,
+            info: AccountInfo(email: "Safe alias", plan: nil),
+            privacyOrdinal: .init(2),
+            label: "Safe alias")))
+        #expect(card.email == "Safe alias")
+        settings.hidePersonalInfo = true
+        let privateCard = store.menuCardModel(for: .claude, context: .account(.init(
+            snapshot: identified,
+            privacyOrdinal: .init(2),
+            label: "Account 2")))
+        #expect(privateCard.email == "Account 2")
         store.snapshots[.claude] = snapshot
         store.claudeSwapAccountSnapshots = [
             .init(
@@ -54,6 +72,12 @@ struct SelectedAccountIconsProjectionTests {
         #expect(missingData.iconKey == inventory[1].key.autosaveName)
         let focus = inventory[1].key
         #expect(store.selectedAccountIconMenuInputs(focused: focus).first?.key == focus)
+        #expect(store.claudeSwapAccountSnapshots.first?.isActive == true)
+        let removed = SelectedAccountIconKey(provider: "claude", source: "claude-swap", opaqueID: "removed")
+        let placeholder = store.selectedAccountIconMenuInputs(focused: removed).first
+        #expect(placeholder?.key == removed)
+        #expect(placeholder?.snapshot == nil)
+        #expect(placeholder?.error == "Account unavailable")
         #expect(store.claudeSwapAccountSnapshots.first?.isActive == true)
         #expect(settings.selectedTokenAccount(for: .claude)?.id == nil)
     }
@@ -140,5 +164,38 @@ struct SelectedAccountIconsProjectionTests {
         #expect(admitted == [12, 11, 10, 9, 8, 1])
         #expect(UsageStore.admittingSelectedIconAccounts(
             [1], selectedIDs: [1], followedID: 1, id: { $0 }) == [1])
+    }
+
+    @Test
+    func `off mode and saved merge preserve legacy refresh admission`() {
+        let settings = testSettingsStore(suiteName: "Selected-off", userDefaults: InMemoryUserDefaults())
+        for index in 1...8 {
+            settings.addTokenAccount(provider: .openrouter, label: "Fixture \(index)", token: "fixture-\(index)")
+        }
+        let store = UsageStore(
+            fetcher: UsageFetcher(),
+            browserDetection: BrowserDetection(cacheTTL: 0),
+            settings: settings,
+            startupBehavior: .testing,
+            environmentBase: [:])
+        settings.accountWidgetsEnabled = false
+        settings.multiAccountMenuLayout = .segmented
+        let accounts = settings.tokenAccounts(for: .openrouter)
+        let selected = settings.selectedTokenAccount(for: .openrouter)
+        let legacyIDs = Array(accounts.prefix(5)).map(\.id) + [accounts[7].id]
+        #expect(!store.shouldFetchAllTokenAccounts(provider: .openrouter, accounts: accounts))
+        #expect(store.limitedTokenAccounts(accounts, selected: selected, provider: .openrouter).map(\.id) == legacyIDs)
+        let key = SelectedAccountIconKey(
+            provider: "openrouter", source: "token-account", opaqueID: accounts[6].id.uuidString)
+        settings.selectedAccountIcons = .init(providers: [
+            "openrouter": .init(mode: .selectedAccounts, accounts: [key]),
+        ])
+        settings.mergeIcons = true
+        #expect(!store.shouldFetchAllTokenAccounts(provider: .openrouter, accounts: accounts))
+        #expect(store.limitedTokenAccounts(accounts, selected: selected, provider: .openrouter).map(\.id) == legacyIDs)
+        settings.mergeIcons = false
+        #expect(store.shouldFetchAllTokenAccounts(provider: .openrouter, accounts: accounts))
+        #expect(store.limitedTokenAccounts(accounts, selected: selected, provider: .openrouter).prefix(2).map(\.id)
+            == [accounts[6].id, accounts[7].id])
     }
 }

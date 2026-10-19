@@ -53,8 +53,18 @@ struct PreferencesSelectedAccountIconsSection: View {
                                 || (!self.entry.accounts.contains(input.key)
                                     && self.entry.accounts.count >= SelectedAccountIconsSettings.maximumAccounts))
                 }
-                ForEach(self.entry.accounts.filter { key in !inventory.contains { $0.key == key } }, id: \.self) { _ in
-                    Text("Selected account unavailable — selection retained").foregroundStyle(.secondary)
+                ForEach(self.entry.accounts.filter { key in
+                    !inventory.contains { $0.key == key }
+                }, id: \.self) { key in
+                    Toggle("Selected account unavailable — selection retained", isOn: Binding(
+                        get: { self.entry.accounts.contains(key) },
+                        set: { selected in
+                            guard !selected else { return }
+                            var entry = self.entry
+                            entry.accounts.removeAll { $0 == key }
+                            self.save(entry)
+                        }))
+                        .disabled(self.settings.mergeIcons || self.settings.selectedAccountIcons.isReadOnly)
                 }
                 Text("Choose up to four accounts. If none are available, the provider icon is shown.")
                     .font(.caption)

@@ -15,6 +15,7 @@ extension UsageMenuCardView.Model {
         let tokenError: String?
         let account: AccountInfo
         let accountIsAuthoritative: Bool
+        let accountLabelOverride: String?
         let accountPrivacyOrdinal: PersonalInfoRedactor.AccountOrdinal?
         let planOverride: PlanOverride
         let planEmphasis: PlanEmphasis
@@ -67,6 +68,7 @@ extension UsageMenuCardView.Model {
             account: AccountInfo,
             accountIsAuthoritative: Bool = false,
             accountPrivacyOrdinal: PersonalInfoRedactor.AccountOrdinal? = nil,
+            accountLabelOverride: String? = nil,
             planOverride: PlanOverride = .automatic,
             planEmphasis: PlanEmphasis = .none,
             lastKnownUsageCapturedAt: Date? = nil,
@@ -115,6 +117,7 @@ extension UsageMenuCardView.Model {
             self.account = account
             self.accountIsAuthoritative = accountIsAuthoritative
             self.accountPrivacyOrdinal = accountPrivacyOrdinal
+            self.accountLabelOverride = accountLabelOverride
             self.planOverride = planOverride
             self.planEmphasis = planEmphasis
             self.lastKnownUsageCapturedAt = lastKnownUsageCapturedAt

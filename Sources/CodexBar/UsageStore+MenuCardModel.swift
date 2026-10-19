@@ -20,6 +20,7 @@ enum UsageMenuCardContext {
         var sourceLabel: String?
         var credits: CreditsSnapshot?
         var tokenAccountID: UUID?
+        var label: String?
     }
 
     var account: Account? {
@@ -133,6 +134,7 @@ extension UsageStore {
                 : AccountInfo(email: nil, plan: nil)),
             accountIsAuthoritative: account?.info != nil,
             accountPrivacyOrdinal: account?.privacyOrdinal,
+            accountLabelOverride: account?.label,
             planOverride: account?.plan ?? .automatic,
             planEmphasis: account?.planEmphasis ?? .none,
             lastKnownUsageCapturedAt: account?.lastKnownUsageCapturedAt

@@ -75,8 +75,15 @@ struct SelectedAccountIconsTests {
         }
     }
 
-    @Test(arguments: [nil, "", " \n ", "person@example.com", "Team <person@example.com>",
-                      "long-alias-before-the-email@example.com", "Team\nPrivate"] as [String?])
+    @Test(arguments: [
+        nil,
+        "",
+        " \n ",
+        "person@example.com",
+        "Team <person@example.com>",
+        "long-alias-before-the-email@example.com",
+        "Team\nPrivate"
+    ] as [String?])
     func `unsafe or empty aliases use ordinal without exposing identity`(alias: String?) {
         #expect(SelectedAccountIconsPrivacy.label(
             for: self.key("person@example.com"), alias: alias, hidePersonalInfo: false, ordinal: 3) == "Account 3")
@@ -129,10 +136,18 @@ struct SelectedAccountIconsTests {
             inventory: ["codex": [self.key("1")]]) == [.provider("codex")])
     }
 
-    @Test(arguments: ["", "null", "[]", "{}", "{", #"{"version":0,"providers":{}}"#,
-                      #"{"version":"1","providers":{}}"#, #"{"version":1}"#,
-                      #"{"version":1,"providers":{"codex":{"mode":"unknown","accounts":[]}}}"#,
-                      #"{"version":1,"providers":{"codex":{"mode":"selectedAccounts","accounts":[{}]}}}"#])
+    @Test(arguments: [
+        "",
+        "null",
+        "[]",
+        "{}",
+        "{",
+        #"{"version":0,"providers":{}}"#,
+        #"{"version":"1","providers":{}}"#,
+        #"{"version":1}"#,
+        #"{"version":1,"providers":{"codex":{"mode":"unknown","accounts":[]}}}"#,
+        #"{"version":1,"providers":{"codex":{"mode":"selectedAccounts","accounts":[{}]}}}"#,
+    ])
     func `malformed payloads fall back to defaults`(json: String) {
         let settings = SelectedAccountIconsSettings.load(from: Data(json.utf8))
         #expect(settings.version == 1)

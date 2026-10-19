@@ -36,7 +36,9 @@ public struct SelectedAccountIconKey: Hashable, Codable, Sendable {
     }
 
     /// Stable accessibility identifier, distinct from the privacy-filtered spoken label.
-    public var accessibilityIdentifier: String { self.autosaveName }
+    public var accessibilityIdentifier: String {
+        self.autosaveName
+    }
 }
 
 // MARK: - Persistence
@@ -77,7 +79,9 @@ public struct SelectedAccountIconsSettings: Codable, Sendable {
     }
 
     /// Whether the payload belongs to a newer, unsupported schema.
-    public var isReadOnly: Bool { self.version != Self.currentVersion }
+    public var isReadOnly: Bool {
+        self.version != Self.currentVersion
+    }
 
     /// Updates saved intent, ignoring edits to unsupported payloads.
     public mutating func setEntry(_ entry: Entry?, for provider: String) {

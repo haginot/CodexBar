@@ -1014,6 +1014,7 @@ extension UsageMenuCardView.Model {
     }
 
     private static func email(from input: Input) -> String {
+        if let label = input.accountLabelOverride { return label }
         // Provider-specific by design: a claude-swap or tcr accountOverride is the display label
         // (alias or email · org). Other stacked sources keep fetched identity first.
         if input.accountIsAuthoritative,
