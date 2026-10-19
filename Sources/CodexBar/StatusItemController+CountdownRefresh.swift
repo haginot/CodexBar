@@ -47,6 +47,10 @@ extension StatusItemController {
             }
         }
 
+        let accountTiming = self.selectedAccountIconTiming(now: now)
+        countdownResetDates += accountTiming.countdown
+        absoluteResetDates += accountTiming.absolute
+        delays += accountTiming.delays
         if let delay = Self.menuBarCountdownRefreshDelay(resetDates: countdownResetDates, now: now) {
             // Match the formatter's visible precision, then observe expiration for exhausted-lane transitions.
             delays.append(delay)

@@ -42,6 +42,7 @@ extension StatusItemController {
             "hideCritters=\(self.settings.menuBarHidesCritters ? "1" : "0")",
             "needsAnimation=\(self.needsMenuBarIconAnimation() ? "1" : "0")",
             providerSignatures,
+            self.selectedAccountIconObservationSignature(),
         ].joined(separator: "|")
     }
 

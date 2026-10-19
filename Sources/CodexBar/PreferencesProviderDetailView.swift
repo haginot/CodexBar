@@ -234,6 +234,9 @@ struct ProviderDetailView<SupplementaryContent: View>: View {
                 }
             }
 
+            PreferencesSelectedAccountIconsSection(
+                provider: self.provider, store: self.store, settings: self.store.settings)
+
             if let tokenAccounts = self.settingsTokenAccounts,
                tokenAccounts.isVisible?() ?? true
             {

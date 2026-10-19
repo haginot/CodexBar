@@ -44,6 +44,9 @@ extension UsageStore {
     }
 
     var iconObservationToken: Int {
+        if self.settings.selectedAccountIcons.providers.values.contains(where: { $0.mode == .selectedAccounts }) {
+            _ = (self.accountSnapshots, self.codexAccountSnapshots)
+        }
         _ = self.snapshots
         _ = self.claudeSwapAccountSnapshots
         _ = self.claudeSwapRevision

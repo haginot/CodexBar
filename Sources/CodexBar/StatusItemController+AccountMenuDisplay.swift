@@ -57,7 +57,10 @@ extension StatusItemController {
         let activeIndex = self.settings.tokenAccountsData(for: provider)?.clampedActiveIndex() ?? 0
         let showAll = self.settings.multiAccountMenuLayout == .stacked
         let displayAccounts = showAll
-            ? self.store.limitedTokenAccounts(accounts, selected: self.settings.selectedTokenAccount(for: provider))
+            ? self.store.limitedTokenAccounts(
+                accounts,
+                selected: self.settings.selectedTokenAccount(for: provider),
+                provider: provider)
             : accounts
         let snapshots = showAll
             ? self.tokenAccountSnapshots(for: provider, matching: displayAccounts)

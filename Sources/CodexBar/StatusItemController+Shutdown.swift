@@ -105,6 +105,7 @@ extension StatusItemController {
     }
 
     private func removeShutdownStatusItems() {
+        self.removeAllAccountStatusItems()
         for item in [self.statusItem] + Array(self.statusItems.values) {
             item.menu = nil
             self.removeStatusItemPreservingPlacement(item)

@@ -283,7 +283,7 @@ extension StatusItemController {
         append(self.statusItem.menu)
         append(self.mergedMenu)
         append(self.fallbackMenu)
-        for item in self.statusItems.values {
+        for item in Array(self.statusItems.values) + Array(self.accountStatusItems.values) {
             append(item.menu)
         }
         for menu in self.providerMenus.values {

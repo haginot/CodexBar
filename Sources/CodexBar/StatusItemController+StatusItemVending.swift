@@ -11,6 +11,36 @@ protocol StatusItemConfiguring: AnyObject {
 extension NSStatusItem: StatusItemConfiguring {}
 
 extension StatusItemController {
+    private nonisolated static let statusItemAccessibilityIdentifierPrefix = "CodexBar.StatusItem"
+
+    enum StatusItemIdentity {
+        case merged
+        case provider(ProviderInstanceID)
+        case account(provider: String, source: String, opaqueID: String)
+
+        var autosaveName: String {
+            switch self {
+            case let .account(provider, source, opaqueID):
+                SelectedAccountIconKey(provider: provider, source: source, opaqueID: opaqueID).autosaveName
+            case .merged:
+                "codexbar-merged"
+            case let .provider(provider):
+                "codexbar-\(provider.rawValue)"
+            }
+        }
+
+        var accessibilityIdentifier: String {
+            switch self {
+            case let .account(provider, source, opaqueID):
+                SelectedAccountIconKey(provider: provider, source: source, opaqueID: opaqueID).accessibilityIdentifier
+            case .merged:
+                StatusItemController.statusItemAccessibilityIdentifierPrefix
+            case let .provider(provider):
+                "\(StatusItemController.statusItemAccessibilityIdentifierPrefix).\(provider.rawValue)"
+            }
+        }
+    }
+
     static func makeStatusItem<Item: StatusItemConfiguring>(
         create: (CGFloat) -> Item,
         identity: StatusItemIdentity,

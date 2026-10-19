@@ -241,7 +241,8 @@ extension StatusItemController {
         }
         // Provider-specific by design: Codex remains the empty merged-menu selection fallback.
         let currentProvider = selectedProvider ?? enabledProviders.first ?? .codex
-        let suppressAccountSwitchers = isOverviewSelected || isPluginSelected
+        let focusedAccount = self.focusedAccountIdentity(for: menu)
+        let suppressAccountSwitchers = isOverviewSelected || isPluginSelected || focusedAccount != nil
         let rawCodexAccountDisplay = suppressAccountSwitchers ? nil : self.codexAccountMenuDisplay(for: currentProvider)
         let codexAccountDisplay = suppressAccountSwitchers
             ? nil
@@ -250,7 +251,8 @@ extension StatusItemController {
                 menu: menu,
                 provider: currentProvider)
         let tokenAccountDisplay = suppressAccountSwitchers ? nil : self.tokenAccountMenuDisplay(for: currentProvider)
-        let showAllAccounts = (tokenAccountDisplay?.showAll ?? false) || (codexAccountDisplay?.showAll ?? false)
+        let showAllAccounts = focusedAccount != nil
+            || (tokenAccountDisplay?.showAll ?? false) || (codexAccountDisplay?.showAll ?? false)
         let openAIContext = self.openAIWebContext(
             currentProvider: currentProvider,
             showAllAccounts: showAllAccounts)
@@ -374,7 +376,8 @@ extension StatusItemController {
                 codexAccountDisplay: codexAccountDisplay,
                 tokenAccountDisplay: tokenAccountDisplay,
                 openAIContext: openAIContext,
-                descriptor: descriptor))
+                descriptor: descriptor,
+                focusedAccount: focusedAccount))
     }
 
     private func reusableFixedWidthRows(in menu: NSMenu) -> [NSMenuItem] {
@@ -437,23 +440,26 @@ extension StatusItemController {
             {
                 return
             }
-            self.addCodexAccountSwitcherIfNeeded(
-                to: menu,
-                display: context.codexAccountDisplay,
-                width: context.menuWidth)
-            self.lastCodexAccountMenuDisplay = context.codexAccountDisplay
-            self.addTokenAccountSwitcherIfNeeded(
-                to: menu,
-                display: context.tokenAccountDisplay,
-                width: context.menuWidth)
-            self.lastTokenAccountMenuDisplay = context.tokenAccountDisplay
+            if self.accountMenuFocus[ObjectIdentifier(menu)] == nil {
+                self.addCodexAccountSwitcherIfNeeded(
+                    to: menu,
+                    display: context.codexAccountDisplay,
+                    width: context.menuWidth)
+                self.lastCodexAccountMenuDisplay = context.codexAccountDisplay
+                self.addTokenAccountSwitcherIfNeeded(
+                    to: menu,
+                    display: context.tokenAccountDisplay,
+                    width: context.menuWidth)
+                self.lastTokenAccountMenuDisplay = context.tokenAccountDisplay
+            }
             let menuContext = MenuCardContext(
                 currentProvider: context.currentProvider,
                 selectedProvider: context.selectedProvider,
                 menuWidth: context.menuWidth,
                 codexAccountDisplay: context.codexAccountDisplay,
                 tokenAccountDisplay: context.tokenAccountDisplay,
-                openAIContext: context.openAIContext)
+                openAIContext: context.openAIContext,
+                focusedAccount: context.focusedAccount)
             self.addPrimaryMenuContent(
                 to: menu,
                 context: menuContext,
@@ -684,6 +690,7 @@ extension StatusItemController {
     }
 
     private func addMenuCards(to menu: NSMenu, context: MenuCardContext, captureMenu: NSMenu? = nil) -> Bool {
+        if self.addSelectedAccountIconMenuCards(to: menu, context: context, captureMenu: captureMenu) { return false }
         let fleetProjection = self.fleetAccountProjection(for: context.currentProvider)
         if self.addFleetFallback(fleetProjection, to: menu, context: context) {
             return false
@@ -835,12 +842,14 @@ extension StatusItemController {
             }
         } else {
             let addedOpenAIWebItems = self.addMenuCards(to: menu, context: context, captureMenu: captureMenu)
-            self.addOpenAIWebItemsIfNeeded(
-                to: menu,
-                currentProvider: context.currentProvider,
-                context: context.openAIContext,
-                addedOpenAIWebItems: addedOpenAIWebItems)
-            self.addUsageHistoryClusterIfNeeded(to: menu, context: context)
+            if self.accountMenuFocus[ObjectIdentifier(captureMenu ?? menu)] == nil {
+                self.addOpenAIWebItemsIfNeeded(
+                    to: menu,
+                    currentProvider: context.currentProvider,
+                    context: context.openAIContext,
+                    addedOpenAIWebItems: addedOpenAIWebItems)
+                self.addUsageHistoryClusterIfNeeded(to: menu, context: context)
+            }
         }
         if switcherSelection != .overview {
             self.addUserPluginMenuCards(to: menu, width: context.menuWidth)
@@ -1140,19 +1149,6 @@ extension StatusItemController {
         // Prefer an available provider so the default menu content matches the status icon.
         // Falls back to first display provider when all lack credentials.
         return enabled.first(where: { self.store.isProviderAvailable($0) }) ?? enabled.first
-    }
-
-    func menuProvider(for menu: NSMenu) -> UsageProvider? {
-        if self.shouldMergeIcons {
-            return self.resolvedMenuProvider()
-        }
-        if let provider = self.menuProviders[ObjectIdentifier(menu)] {
-            return provider.firstPartyProvider
-        }
-        if menu === self.fallbackMenu {
-            return nil
-        }
-        return self.store.enabledFirstPartyProvidersForDisplay().first ?? .codex
     }
 
     private func scheduleOpenMenuRefresh(for menu: NSMenu) {

@@ -156,7 +156,7 @@ extension UsageStore {
             projection.visibleAccounts.filter { requestedAccountIDs?.contains($0.id) ?? true },
             snapshots: self.codexAccountSnapshots,
             activeVisibleAccountID: projection.activeVisibleAccountID)
-        guard requestedAccountIDs != nil ? !accounts.isEmpty : accounts.count > 1 else {
+        guard self.admitsCodexAccountRefresh(accounts: accounts, requestedAccountIDs: requestedAccountIDs) else {
             if requestedAccountIDs != nil { return }
             self.codexAccountSnapshots = []
             return
@@ -520,7 +520,7 @@ extension UsageStore {
             self.reconcileSelectedTokenAccountSnapshotBeforeRefresh(provider: provider, accounts: accounts)
             return
         }
-        let limitedAccounts = self.limitedTokenAccounts(accounts, selected: selectedAccount)
+        let limitedAccounts = self.limitedTokenAccounts(accounts, selected: selectedAccount, provider: provider)
 
         // Capture the prior per-account snapshot state so we can preserve last-good
         // data when an in-flight refresh is cancelled (e.g. menu tab switches). Without
@@ -619,46 +619,6 @@ extension UsageStore {
             return true
         }
         return resultEmail == CodexIdentityResolver.normalizeEmail(account.email)
-    }
-
-    func limitedTokenAccounts(
-        _ accounts: [ProviderTokenAccount],
-        selected: ProviderTokenAccount?) -> [ProviderTokenAccount]
-    {
-        let limit = Self.tokenAccountMenuSnapshotLimit
-        if accounts.count <= limit {
-            return accounts
-        }
-        var limited = Array(accounts.prefix(limit))
-        if let selected, !limited.contains(where: { $0.id == selected.id }) {
-            limited.removeLast()
-            limited.append(selected)
-        }
-        return limited
-    }
-
-    func limitedCodexVisibleAccounts(
-        _ accounts: [CodexVisibleAccount],
-        snapshots: [CodexAccountUsageSnapshot] = [],
-        activeVisibleAccountID: String?) -> [CodexVisibleAccount]
-    {
-        let accounts = CodexAccountPresentationOrdering.orderedAccounts(
-            accounts,
-            snapshots: snapshots,
-            activeVisibleAccountID: activeVisibleAccountID)
-        let limit = Self.tokenAccountMenuSnapshotLimit
-        if accounts.count <= limit {
-            return accounts
-        }
-        var limited = Array(accounts.prefix(limit))
-        if let activeVisibleAccountID,
-           let active = accounts.first(where: { $0.id == activeVisibleAccountID }),
-           !limited.contains(where: { $0.id == activeVisibleAccountID })
-        {
-            limited.removeLast()
-            limited.append(active)
-        }
-        return limited
     }
 
     func fetchOutcome(

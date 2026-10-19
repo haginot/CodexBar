@@ -17,6 +17,7 @@ extension StatusItemController {
         let codexAccountDisplay: CodexAccountMenuDisplay?
         let tokenAccountDisplay: TokenAccountMenuDisplay?
         let openAIContext: OpenAIWebContext
+        var focusedAccount: ProviderAccountIdentity?
     }
 
     struct MenuRebuildContext {
@@ -30,5 +31,6 @@ extension StatusItemController {
         let tokenAccountDisplay: TokenAccountMenuDisplay?
         let openAIContext: OpenAIWebContext
         let descriptor: MenuDescriptor
+        var focusedAccount: ProviderAccountIdentity?
     }
 }

@@ -406,9 +406,10 @@ final class SettingsStore {
         self.keychainAccessPolicy = keychainAccessPolicy
         self.config = config
         self.configLoading = true
-        let defaultsState = Self.loadDefaultsState(
+        var defaultsState = Self.loadDefaultsState(
             userDefaults: userDefaults,
             hadPreviousInstallationState: hadPreviousInstallationState)
+        defaultsState.selectedAccountIcons = .load(from: userDefaults.data(forKey: "selectedAccountIconsV1"))
         self.defaultsState = defaultsState
         self.providerSwitcherShortcuts = (try? ProviderSwitcherShortcuts.validated(
             userDefaults.dictionary(forKey: "switcherShortcuts") as? [String: String] ?? [:]))

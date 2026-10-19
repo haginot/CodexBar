@@ -96,7 +96,7 @@ extension UsageStore {
         let previous = self.widgetVerifiedTokenSnapshots[provider] ?? [:]
         var verified: [UUID: WidgetVerifiedTokenSnapshot] = [:]
         let entries = self.limitedTokenAccounts(
-            accounts, selected: self.settings.effectiveSelectedTokenAccount(for: provider))
+            accounts, selected: self.settings.effectiveSelectedTokenAccount(for: provider), provider: provider)
             .enumerated().compactMap { index, account -> WidgetSnapshot.AccountEntry? in
                 guard uniqueIDs.contains(account.id) else { return nil }
                 let scope = self.widgetTokenCredentialScope(provider: provider, account: account)

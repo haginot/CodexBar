@@ -45,6 +45,7 @@ struct SettingsDefaultsState {
     var kiroMenuBarDisplayModeRaw: String?
     var historicalTrackingEnabled: Bool
     var multiAccountMenuLayoutRaw: String
+    var selectedAccountIcons: SelectedAccountIconsSettings = .init()
     var accountWidgetsEnabled: Bool
     var menuBarMetricPreferencesRaw: [String: String]
     var storedMenuBarLayout: MenuBarLayout?

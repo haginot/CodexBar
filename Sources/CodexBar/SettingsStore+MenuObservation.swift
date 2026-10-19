@@ -43,6 +43,7 @@ extension SettingsStore {
         _ = self.historicalTrackingEnabled
         _ = self.multiAccountMenuLayout
         _ = self.accountWidgetsEnabled
+        _ = self.selectedAccountIcons
         _ = self.menuBarMetricPreferencesRaw
         _ = self.menuBarLayout
         _ = self.menuBarLayoutOverrides
